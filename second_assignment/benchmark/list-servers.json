@@ -1,0 +1,49 @@
+{
+    "NovaServers.list_servers": [
+        {
+            "args": {
+                "detailed": true
+            },
+            "runner": {
+                "type": "constant",
+                "times": 8,
+                "concurrency": 2
+            },
+            "context": {
+                "servers": {
+                    "flavor": {
+                        "name": "Cloud Computing"
+                    },
+                    "image": {
+                        "name": "ubuntu-16.04"
+                    },
+                    "servers_per_tenant": 2
+                }
+            },
+            "sla": {
+                "failure_rate": {
+                    "max": 0
+                }
+            }
+        }
+    ],
+    "NovaServers.boot_and_delete_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "Cloud Computing"
+                },
+                "image": {
+                    "name": "ubuntu-16.04"
+                },
+                "force_delete": false
+            },
+            "runner": {
+                "type": "constant",
+                "times": 8,
+                "concurrency": 2
+            },
+            "context": {}
+        }
+    ]
+}

@@ -1,0 +1,107 @@
+heat_template_version: 2015-10-15
+description: One frontend vm and two backend vms
+
+parameters:
+    key_pair:
+        type: string
+        label: 1st_key
+        constraints:
+            - custom_constraint: nova.keypair
+    flavor:
+        type: string
+        label: Flavor
+        constraints:
+            - custom_constraint: nova.flavor
+    image:
+        type: string
+        label: Image Name
+        constraints:
+            - custom_constraint: glance.image
+    network:
+        type: string
+        label: cc-net
+        constraints:
+            - custom_constraint: neutron.network
+    zone:
+        type: string
+        label: Availability Zone
+        default: Default
+
+resources:
+
+    cloud-network:
+        type: OS::Neutron::Net
+        properties:
+            name: network
+    subnet:
+        type: OS::Neutron::Subnet
+        properties:
+            name: STACK-subnet
+            network: { get_resource: cloud-network }
+            cidr: "192.168.0.0/24"
+            ip_version: 4
+
+    router:
+        type: OS::Neutron::Router
+        properties:
+            external_gateway_info: { network: tu-internal }
+
+    router_interface:
+        type: OS::Neutron::RouterInterface
+        properties:
+            router: { get_resource: router }
+            subnet: { get_resource: subnet }
+
+    security_group_frontend:
+        type: OS::Neutron::SecurityGroup
+        properties:
+            name: security-group-frontend
+            rules:
+                - { protocol: icmp }
+                - { protocol: tcp, port_range_min: 22, port_range_max: 22 }
+                - { protocol: tcp, port_range_min: 80, port_range_max: 80 }
+
+    floating_ip:
+        type: OS::Neutron::FloatingIP
+        properties:
+            floating_network: tu-internal
+            port_id: { get_attr: [ frontend, port ] }
+
+    floating_ip_association:
+        type: OS::Neutron::FloatingIPAssociation
+        properties:
+            floatingip_id: { get_resource: floating_ip }
+            port_id: { get_attr: [ frontend, port ] }
+            
+    frontend:
+        type: server.yaml
+        properties:
+            name: frontend
+            key_pair: { get_param: key_pair }
+            image: { get_param: image }
+            flavor: { get_param: flavor }
+            zone: { get_param: zone }
+            network: { get_resource: cloud-network }
+            security_groups: [ { get_resource: security_group_frontend }]
+
+    backends:
+        type: OS::Heat::ResourceGroup
+        properties:
+            count: 2
+            resource_def:
+                type: server.yaml
+                properties: 
+                    name: backend-%index%
+                    key_pair: { get_param: key_pair }
+                    image: { get_param: image }
+                    flavor: { get_param: flavor }
+                    zone: { get_param: zone }
+                    network: { get_resource: cloud-network }             
+
+outputs:
+    floating_ip:
+        description: Floating IP of the frontend server
+        value: { get_attr: [ floating_ip, floating_ip_address ] }
+    backend_ips:
+        description: Virtual IPs of the backend servers
+        value: { get_attr: [ backends, ip ] }

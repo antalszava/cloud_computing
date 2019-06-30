@@ -1,0 +1,1 @@
+0 */4 * * * /home/pi/rally.sh && curl -sm 30 k.wdt.io/antalszava@gmail.com/rall$

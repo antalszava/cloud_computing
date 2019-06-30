@@ -1,0 +1,34 @@
+#current version is 3.4, don't know if it is the best choice
+version: '3.4'
+
+services:
+    # Create frontend service
+    frontend:
+        # Map the Container port 80 to port 80 of the VM
+        ports:
+            - target: 80
+              published: 80
+        # As image, use the frontend Docker image that you uploaded into a
+        # public Docker registry earlier
+        image: antalszava/cc_frontend
+        # Mount the ​/etc ​directory of the VM into the container as
+        # /hypervisor_etc​. This matches the volume that you defined in the
+        # Dockerfiles
+        volumes:
+            - /etc:/hypervisor_etc
+        #  The service must be replicated two-fold and the containers must
+        #automatically restart upon failure.
+        deploy:
+            mode: replicated
+            replicas: 2
+            restart_policy:
+                condition: on-failure
+            # Add a placement constraint that ensures that both replicas are
+            # launched on the frontend VM. Use the hostname of the frontend VM
+            # (which is cc-docker-frontend) as constraint filter
+            placement:
+                constraints: ["node.hostname == cc-docker-frontend"]
+        # Add an environment variable ​CC_BACKEND_SERVERS​ and set it to
+        # the value ​${CC_BACKEND_SERVERS}​.
+        environment:
+            - "CC_BACKEND_SERVERS​=​${CC_BACKEND_SERVERS}​"

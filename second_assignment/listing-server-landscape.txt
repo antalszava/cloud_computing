@@ -1,0 +1,19 @@
+//Creating the openstack stacks
+openstack stack create -t server-landscape.yaml --parameter image=ubuntu-16.04 --parameter key_pair=1st_key --parameter network=cc-net --parameter "flavor=Cloud Computing" --parameter "zone=Cloud Computing" stack
+//Getting the floating IP address of the stack
+openstack stack output show --all stack
+//Before SSH-ing into the fronted instance, had to clear the previous key association
+ ssh-keygen -f "~dummypath/.ssh/known_hosts" -R 10.200.2.207
+//SSH-ing into the frontend instance
+ssh -i cloud.key ubuntu@10.200.2.207
+//Copying the private key to the frontend stack
+scp -i cloud.key cloud.key ubuntu@10.200.2.207
+//Change permissions of the file
+chmod 700 cloud.key
+//SSH-ing into the first backend instance
+ssh -i cloud.key ubuntu@192.168.0.5
+//SSH-ing into the second backend instance
+ssh -i cloud.key ubuntu@192.168.0.3
+//Getting an internet performance measurement tool
+//Following the steps from: https://askubuntu.com/questions/104755/how-to-check-internet-speed-via-terminal
+curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -

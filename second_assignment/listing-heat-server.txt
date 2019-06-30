@@ -1,0 +1,33 @@
+//Installing the heat client
+pip install python-heatclient
+//The following commands were merely used to check the current status of the created stacks:
+//Showing the status of a given stack
+openstack stack show stack_name
+//Query the list of stacks
+Openstack stack list
+//Creating an openstack stack using heat
+//Needed to specify the parameters in the command as well
+openstack stack create -t server.yml --parameter image=ubuntu-16.04 --parameter key_pair=1st_key --parameter network=cc-net --parameter "flavor=Cloud Computing" --parameter name=Heat --parameter "security_groups=default" --parameter "zone=Cloud Computing" heat
+//Attach floating IP to the instance
+openstack server add floating ip Heat 10.200.2.207
+//Before SSH-ing into the heat instance, had to clear the previous key association
+ ssh-keygen -f "~dummypath/.ssh/known_hosts" -R 10.200.2.207
+//SSH-ing into the heat instance
+ssh -i cloud.key ubuntu@10.200.2.207
+//Getting an internet performance measurement tool
+//Following the steps from: https://askubuntu.com/questions/104755/how-to-check-internet-speed-via-terminal
+curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -
+//Output of the measurement:
+Retrieving speedtest.net configuration...
+Testing from TU Berlin, campus network (130.149.248.93)...
+Retrieving speedtest.net server list...
+Selecting best server based on ping...
+Hosted by Interoute VDC (Berlin) [1.13 km]: 5.31 ms
+Testing download speed...............................................................................
+.Download: 89.74 Mbit/s
+Testing upload speed......................................................................................................
+Upload: 91.46 Mbit/s
+//Deleting the stack
+Openstack stack delete Heat
+//Checking if the stack was deleted, an empty list is the result
+Openstack stack list

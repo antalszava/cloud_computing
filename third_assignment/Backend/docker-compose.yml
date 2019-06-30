@@ -1,0 +1,30 @@
+#current version is 3.4, don't know if it is the best choice
+version: '3.4'
+
+services:
+    # Create backend service
+    backend: 
+        # Map the Container port 80 to port 8000 of the VM
+        ports:
+            - target: 80
+              published: 8000
+        # As image, use the backend Docker image that you uploaded into a
+        # public Docker registry earlier
+        image: antalszava/cc_backend
+        # Mount the ​/etc ​directory of the VM into the container as
+        # /hypervisor_etc​. This matches the volume that you defined in the
+        # Dockerfiles
+        volumes:
+            - /etc:/hypervisor_etc
+        # The service must be replicated five-fold and the containers must
+        # automatically restart upon failure.
+        deploy:
+            mode: replicated
+            replicas: 5
+            restart_policy:
+                condition: on-failure
+            # Add a placement constraint that ensures that the five replicas are
+            # launched only on the backend VMs. Use the hostname of the frontend
+            # VM (which is cc-docker-frontend) as negative constraint filter.
+            placement:
+                constraints: ["node.hostname != cc-docker-frontend"]
