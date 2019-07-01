@@ -1,4 +1,4 @@
-Cloud Computing course at TU Berlin
+# Cloud Computing course at TU Berlin
 
 1. Assignment:
 Benchmarking AWS and Openstack memory and latency performances.
